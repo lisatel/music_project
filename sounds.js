@@ -7,7 +7,7 @@ var keyAllowed = {};
 //Synth class
 var Synth = function (context){
 	this.context = context;
-	this.numSaws = 3;
+	this.numSaws = 5;
 	this.detune = 12;
 	this.voices = [];
 	this.output = this.context.createGain();
@@ -62,7 +62,7 @@ var Voice = function(context, frequency, numSaws, detune){
 
 	for(var i=0; i<numSaws; i++){
 		var saw = this.context.createOscillator();
-		saw.type = 'sawtooth';
+		saw.type = 'square';
 		saw.frequency.value = this.frequency;
 		saw.detune.value = -this.detune + i * 2 * this.detune / (this.numSaws - 1);
 		saw.start(this.context.currentTime);
