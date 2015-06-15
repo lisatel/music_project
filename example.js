@@ -47,16 +47,17 @@ function StaticBall(x,y,r) {
 	this.x = x || 0;
 	this.y = y || 0;
 	this.r = r || 0;
+	this.v = new Vector(x,y);
 };
 
 StaticBall.prototype.draw = function(ctx){
-		ctx.beginPath();
-		grd2 = ctx.createRadialGradient(this.x + this.r, this.y + this.r, 0, this.x + this.r, this.y + this.r, this.r *3.2);
-		grd2.addColorStop(1, 'rgba(10, 10, 255, 1)');
-		grd2.addColorStop(0, 'rgba(150, 150, 255, 1)');
-		ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2, false);
-		ctx.fillStyle = grd2;
-		ctx.fill();
+	ctx.beginPath();
+	grd2 = ctx.createRadialGradient(this.x + this.r, this.y + this.r, 0, this.x + this.r, this.y + this.r, this.r *3.2);
+	grd2.addColorStop(1, 'rgba(10, 10, 255, 1)');
+	grd2.addColorStop(0, 'rgba(150, 150, 255, 1)');
+	ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2, false);
+	ctx.fillStyle = grd2;
+	ctx.fill();
 };
 
 StaticBall.prototype.displace = function(x,y){
@@ -69,9 +70,9 @@ StaticBall.prototype.displace = function(x,y){
 	if (canvas.getContext) {
 		var ctx = canvas.getContext("2d");
 		ctx.canvas.width  = window.innerWidth;
-        ctx.canvas.height = window.innerHeight;
+		ctx.canvas.height = window.innerHeight;
 
-        var toppos = new Vector(125 + Math.random() * 275, 50);
+		var toppos = new Vector(125 + Math.random() * 275, 50);
 		var topR = 50;
 
 		var botpos = new Vector(300, 600);
@@ -85,54 +86,62 @@ StaticBall.prototype.displace = function(x,y){
 		ctx.fillStyle = grd1;
 		ctx.fill();
 
-		ball1 = new StaticBall(botpos.x,botpos.y,botR);
-		ball1.draw(ctx);
+		var ballarray = [];
+
+		ballarray[0] = new StaticBall(300,600,150);
+		ballarray[1] = new StaticBall(550,800,100);
+		ballarray[2] = new StaticBall(950,700,200);
+		ballarray[3] = new StaticBall(1250,400,100);
+		ballarray[4] = new StaticBall(150,300,100);
+		ballarray[5] = new StaticBall()
+
+		ballarray.forEach(function(e,i,a){
+			e.draw(ctx);
+		});
 
 
 		var topstart = new Vector(0,0);
-		var botstart = new Vector(0,0);
 		var grav = new Vector(0,0.1);
-		//var synth = new Synth(ctx);
 	}
 
 
 	function animate() {
 
-	synth.noteOff(62);
+		synth.noteOff(62);
 
-	RequestID = requestAnimationFrame(animate);
+		RequestID = requestAnimationFrame(animate);
 
-    ctx.clearRect(toppos.x - topR - 5, toppos.y - topR - 5, topR * 3, topR * 3);
-    ctx.clearRect(botpos.x - ball1.r - 5, botpos.y - ball1.r - 5, ball1.r * 3, ball1.r * 3);
+		ctx.clearRect(toppos.x - topR - 5, toppos.y - topR - 5, topR * 3, topR * 3);
 
+		toppos.x = toppos.x + topstart.x;
+		toppos.y = toppos.y + topstart.y;
 
-    toppos.x = toppos.x + topstart.x;
-    toppos.y = toppos.y + topstart.y;
-    ball1.displace(botstart.x,botstart.y);
-    botpos = new Vector (ball1.x,ball1.y);
+		ballarray.forEach(function(e,i,a){
+			if (Vector.distancebetween(e.v,toppos) < (topR+e.r)){
+				synth.noteOn(62);
+				var length = topstart.lengthof();
+				topstart = Vector.bounceoff(e.v,toppos);
+				topstart = Vector.scale(topstart, length/1.2);
+			}
+			else{
+				topstart = Vector.add(topstart, grav);
+			}
+		});
 
-    if (Vector.distancebetween(botpos,toppos) < (topR+ball1.r)){
-    	synth.noteOn(62);
-    	var length = topstart.lengthof();
-    	topstart = Vector.bounceoff(botpos,toppos);
-    	topstart = Vector.scale(topstart, length/1.2);
-    }
-    else{
-    	topstart = Vector.add(topstart, grav);
-    }
+		ctx.beginPath();
+		grd1 = ctx.createRadialGradient(toppos.x + topR, toppos.y + topR, 0, toppos.x + topR, toppos.y + topR, topR *3.2);
+		grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
+		grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
+		ctx.arc(toppos.x, toppos.y, topR, 0, Math.PI * 2, false);
+		ctx.fillStyle = grd1;
+		ctx.fill();
 
-    ctx.beginPath();
-  	grd1 = ctx.createRadialGradient(toppos.x + topR, toppos.y + topR, 0, toppos.x + topR, toppos.y + topR, topR *3.2);
-	grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
-	grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
-	ctx.arc(toppos.x, toppos.y, topR, 0, Math.PI * 2, false);
-	ctx.fillStyle = grd1;
-	ctx.fill();
+		ballarray.forEach(function(e,i,a){
+			e.draw(ctx);
+		});
 
-	ball1.draw(ctx);
+	}
 
-  }
-
-  requestAnimationFrame(animate);
+	requestAnimationFrame(animate);
 
 }());
