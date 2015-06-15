@@ -92,10 +92,13 @@ StaticBall.prototype.displace = function(x,y){
 		var topstart = new Vector(0,0);
 		var botstart = new Vector(0,0);
 		var grav = new Vector(0,0.1);
+		//var synth = new Synth(ctx);
 	}
 
 
 	function animate() {
+
+	synth.noteOff(62);
 
 	RequestID = requestAnimationFrame(animate);
 
@@ -109,6 +112,7 @@ StaticBall.prototype.displace = function(x,y){
     botpos = new Vector (ball1.x,ball1.y);
 
     if (Vector.distancebetween(botpos,toppos) < (topR+ball1.r)){
+    	synth.noteOn(62);
     	var length = topstart.lengthof();
     	topstart = Vector.bounceoff(botpos,toppos);
     	topstart = Vector.scale(topstart, length/1.2);
