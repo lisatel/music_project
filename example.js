@@ -1,42 +1,67 @@
+//Vector
+
 function Vector(x, y) {
-    this.x = x || 0;
-    this.y = y || 0;
-}
+	this.x = x || 0;
+	this.y = y || 0;
+};
+
+Vector.prototype.lengthof = function() {
+	return Math.sqrt(this.x * this.x + this.y * this.y);
+};
 
 Vector.add = function(a, b) {
-    return new Vector(a.x + b.x, a.y + b.y);
+	return new Vector(a.x + b.x, a.y + b.y);
 };
 
 Vector.sub = function(a, b) {
-    return new Vector(a.x - b.x, a.y - b.y);
+	return new Vector(a.x - b.x, a.y - b.y);
 };
 
 Vector.scale = function(v, s) {
-    return new Vector(v.x * s, v.y *s);
+	return new Vector(v.x * s, v.y *s);
 };
 
 Vector.random = function() {
-    return new Vector(
-        Math.random() * 2 - 1,
-        Math.random() * 2 - 1
-    );
-};
-
-Vector.lengthof = function(v) {
-		return Math.sqrt(v.x * v.x + v.y * v.y);
+	return new Vector(
+		Math.random() * 2 - 1,
+		Math.random() * 2 - 1
+		);
 };
 
 Vector.distancebetween = function(v,s) {
-        var dx = v.x - s.x,
-        	dy = v.y - s.y;
-        return Math.sqrt(dx * dx + dy * dy);
+	var dx = v.x - s.x,
+	dy = v.y - s.y;
+	return Math.sqrt(dx * dx + dy * dy);
 };
 
 Vector.bounceoff = function(start,finish){
-		var dx = finish.x - start.x,
-        	dy = finish.y - start.y;
-        var length = Math.sqrt(dx * dx + dy * dy)
-        return new Vector(dx/length,dy/length);
+	var dx = finish.x - start.x,
+	dy = finish.y - start.y;
+	var length = Math.sqrt(dx * dx + dy * dy)
+	return new Vector(dx/length,dy/length);
+};
+
+//StaticBall
+
+function StaticBall(x,y,r) {
+	this.x = x || 0;
+	this.y = y || 0;
+	this.r = r || 0;
+};
+
+StaticBall.prototype.draw = function(ctx){
+		ctx.beginPath();
+		grd2 = ctx.createRadialGradient(this.x + this.r, this.y + this.r, 0, this.x + this.r, this.y + this.r, this.r *3.2);
+		grd2.addColorStop(1, 'rgba(10, 10, 255, 1)');
+		grd2.addColorStop(0, 'rgba(150, 150, 255, 1)');
+		ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2, false);
+		ctx.fillStyle = grd2;
+		ctx.fill();
+};
+
+StaticBall.prototype.displace = function(x,y){
+	this.x = this.x + x;
+	this.y = this.y + y;
 };
 
 (function() {
@@ -60,14 +85,9 @@ Vector.bounceoff = function(start,finish){
 		ctx.fillStyle = grd1;
 		ctx.fill();
 
+		ball1 = new StaticBall(botpos.x,botpos.y,botR);
+		ball1.draw(ctx);
 
-		ctx.beginPath();
-		grd2 = ctx.createRadialGradient(botpos.x + botR, botpos.y + botR, 0, botpos.x + botR, botpos.y + botR, botR *3.2);
-		grd2.addColorStop(1, 'rgba(10, 10, 255, 1)');
-		grd2.addColorStop(0, 'rgba(150, 150, 255, 1)');
-		ctx.arc(botpos.x, botpos.y, botR, 0, Math.PI * 2, false);
-		ctx.fillStyle = grd2;
-		ctx.fill();
 
 		var topstart = new Vector(0,0);
 		var botstart = new Vector(0,0);
@@ -75,22 +95,21 @@ Vector.bounceoff = function(start,finish){
 	}
 
 
-
 	function animate() {
 
 	RequestID = requestAnimationFrame(animate);
 
     ctx.clearRect(toppos.x - topR - 5, toppos.y - topR - 5, topR * 3, topR * 3);
-    ctx.clearRect(botpos.x - botR - 5, botpos.y - botR - 5, botR * 3, botR * 3);
+    ctx.clearRect(botpos.x - ball1.r - 5, botpos.y - ball1.r - 5, ball1.r * 3, ball1.r * 3);
 
 
     toppos.x = toppos.x + topstart.x;
     toppos.y = toppos.y + topstart.y;
-    botpos.x = botpos.x + botstart.x;
-    botpos.y = botpos.y + botstart.y;
+    ball1.displace(botstart.x,botstart.y);
+    botpos = new Vector (ball1.x,ball1.y);
 
-    if (Vector.distancebetween(botpos,toppos) < (topR+botR)){
-    	var length = Vector.lengthof(topstart);
+    if (Vector.distancebetween(botpos,toppos) < (topR+ball1.r)){
+    	var length = topstart.lengthof();
     	topstart = Vector.bounceoff(botpos,toppos);
     	topstart = Vector.scale(topstart, length/1.2);
     }
@@ -106,17 +125,10 @@ Vector.bounceoff = function(start,finish){
 	ctx.fillStyle = grd1;
 	ctx.fill();
 
-	ctx.beginPath();
-	grd2 = ctx.createRadialGradient(botpos.x + botR, botpos.y + botR, 0, botpos.x + botR, botpos.y + botR, botR *3.2);
-	grd2.addColorStop(1, 'rgba(10, 10, 255, 1)');
-	grd2.addColorStop(0, 'rgba(150, 150, 255, 1)');
-	ctx.arc(botpos.x, botpos.y, botR, 0, Math.PI * 2, false);
-	ctx.fillStyle = grd2;
-	ctx.fill();
+	ball1.draw(ctx);
 
   }
 
-  console.log("stuff")
   requestAnimationFrame(animate);
 
 }());
