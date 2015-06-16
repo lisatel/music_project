@@ -195,11 +195,11 @@ document.onkeydown = function(e) {
 			//startOsc(261.63);
 			synth.noteOn(60);
 			break;
-			case 83:
+		case 83:
 			//startOsc(392.00);
 			synth.noteOn(62);
 			break;
-			case 68:
+		case 68:
 			//startOsc(261.63);
 			synth.noteOn(64);
 			break;
@@ -268,6 +268,87 @@ document.onkeyup = function(e) {
 //Main function
 
 (function() {
+
+	//Input Definitions
+
+	document.onkeydown = function(e) {
+		// if (keyAllowed[e.keyCode] === false) return;
+		// keyAllowed[e.keyCode] = false;
+		switch (e.keyCode){
+			case 65:
+				//startOsc(261.63);
+				synth.noteOn(60);
+				break;
+			case 83:
+				//startOsc(392.00);
+				synth.noteOn(62);
+				break;
+			case 68:
+				//startOsc(261.63);
+				synth.noteOn(64);
+				break;
+			case 70:
+				//startOsc(392.00);
+				synth.noteOn(65);
+				break;
+			case 74:
+				//startOsc(261.63);
+				synth.noteOn(67);
+				break;
+			case 75:
+				//startOsc(261.63);
+				synth.noteOn(69);
+				break;
+			case 76:
+				//startOsc(392.00);
+				synth.noteOn(71);
+				break;
+			case 186:
+				//startOsc(392.00);
+				synth.noteOn(72);
+				break;
+		}
+	}
+
+	document.onkeyup = function(e) {
+		//keyAllowed[e.keyCode] = true;
+		switch(e.keyCode){
+			case 65:
+				//startOsc(261.63);
+				synth.noteOff(60);
+				break;
+			case 83:
+				//startOsc(392.00);
+				synth.noteOff(62);
+				break;
+			case 68:
+				//startOsc(261.63);
+				synth.noteOff(64);
+				break;
+			case 70:
+				//startOsc(392.00);
+				synth.noteOff(65);
+				break;
+			case 74:
+				//startOsc(261.63);
+				synth.noteOff(67);
+				break;
+			case 75:
+				//startOsc(261.63);
+				synth.noteOff(69);
+				break;
+			case 76:
+				//startOsc(392.00);
+				synth.noteOff(71);
+				break;
+			case 186:
+				//startOsc(392.00);
+				synth.noteOff(72);
+				break;
+
+		}
+	}
+
 	var canvas = document.getElementById("maincan");
 	ctx.canvas.width  = window.innerWidth;
 	ctx.canvas.height = window.innerHeight;
