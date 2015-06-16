@@ -6,6 +6,7 @@ var ctx = canvas.getContext("2d");
 var oscillator, gain;
 var keyAllowed = {};
 var ballarray = [];
+var fballarray = [];
 
 //Synth Class
 
@@ -185,6 +186,36 @@ StaticBall.prototype.displace = function(x,y){
 	this.y = this.y + y;
 };
 
+//FallingBall Class
+
+function FallingBall(x,y,r,dx,dy) {
+	this.v = new Vector(x,y);
+	this.dv = new Vector(dx,dy);
+	this.r = r || 0;
+
+};
+
+FallingBall.prototype.draw = function(ctx){
+	ctx.beginPath();
+	grd1 = ctx.createRadialGradient(this.v.x + this.r, this.v.y + this.r, 0, this.v.x + this.r, this.v.y + this.r, this.r *3.2);
+	grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
+	grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
+	ctx.arc(this.v.x, this.v.y, this.r, 0, Math.PI * 2, false);
+	ctx.fillStyle = grd1;
+	ctx.fill();
+};
+
+FallingBall.prototype.displace = function(x,y){
+	this.v.x = this.v.x + x;
+	this.v.y = this.v.y + y;
+};
+
+FallingBall.prototype.update = function(){
+	this.v.x = this.v.x + this.dv.x;
+	this.v.y = this.v.y + this.dv.y;
+};
+
+
 //Input Definitions
 
 document.onkeydown = function(e) {
@@ -353,16 +384,14 @@ document.onkeyup = function(e) {
 	ctx.canvas.width  = window.innerWidth;
 	ctx.canvas.height = window.innerHeight;
 
-	var toppos = new Vector(125 + Math.random() * 275, 50);
-	var topR = 50;
+	fballarray[0] = new FallingBall(125+Math.random()*275,50,50,0,0);
+	fballarray[1] = new FallingBall(325+Math.random()*275,50,50,0,0);
+	fballarray[2] = new FallingBall(425+Math.random()*275,50,50,0,0);
+	fballarray[3] = new FallingBall(625+Math.random()*275,50,50,0,0);
 
-	ctx.beginPath();
-	grd1 = ctx.createRadialGradient(toppos.x + topR, toppos.y + topR, 0, toppos.x + topR, toppos.y + topR, topR *3.2);
-	grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
-	grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
-	ctx.arc(toppos.x, toppos.y, topR, 0, Math.PI * 2, false);
-	ctx.fillStyle = grd1;
-	ctx.fill();
+	fballarray.forEach(function(e,i,a){
+		e.draw(ctx);
+	});
 
 	ballarray[0] = new StaticBall(300,600,150);
 	ballarray[1] = new StaticBall(550,800,50);
@@ -374,39 +403,34 @@ document.onkeyup = function(e) {
 		e.draw(ctx);
 	});
 
-	var topstart = new Vector(0,0);
 	var grav = new Vector(0,0.1);
 	
 	function animate() {
 
-		synth.noteOff(62);
+		synth.noteOff(75);
 
 		RequestID = requestAnimationFrame(animate);
 
-		ctx.clearRect(toppos.x - topR - 5, toppos.y - topR - 5, topR * 3, topR * 3);
+		fballarray.forEach(function(e,i,a){
 
-		toppos.x = toppos.x + topstart.x;
-		toppos.y = toppos.y + topstart.y;
-
-		ballarray.forEach(function(e,i,a){
-			if (Vector.distancebetween(e.v,toppos) < (topR+e.r)){
-				synth.noteOn(62);
-				var length = topstart.lengthof();
-				topstart = Vector.bounceoff(e.v,toppos);
-				topstart = Vector.scale(topstart, length/1.2);
-			}
-			else{
-				topstart = Vector.add(topstart, grav);
-			}
+			ctx.clearRect(e.v.x - e.r - 5, e.v.y - e.r - 5, e.r * 3, e.r * 3);
+			e.update();
+			ballarray.forEach(function(ea,ia,aa){
+				if (Vector.distancebetween(ea.v,e.v) < (ea.r+e.r)){
+					synth.noteOn(75);
+					var length = e.dv.lengthof();
+					e.dv = Vector.bounceoff(ea.v,e.v);
+					e.dv = Vector.scale(e.dv, length/1.2);
+				}
+				else{
+					e.dv = Vector.add(e.dv, grav);
+				}
+			});
 		});
 
-		ctx.beginPath();
-		grd1 = ctx.createRadialGradient(toppos.x + topR, toppos.y + topR, 0, toppos.x + topR, toppos.y + topR, topR *3.2);
-		grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
-		grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
-		ctx.arc(toppos.x, toppos.y, topR, 0, Math.PI * 2, false);
-		ctx.fillStyle = grd1;
-		ctx.fill();
+		fballarray.forEach(function(e,i,a){
+		e.draw(ctx);
+		});
 
 		ballarray.forEach(function(e,i,a){
 			e.draw(ctx);
