@@ -63,13 +63,13 @@ var Voice = function(context, frequency, numSaws, detune){
 	this.output = this.context.createGain();
 	this.maxGain = 1/this.numSaws;
 	this.attack = 0.001;
-	this.decay = 0.015;
-	this.release = 0.4;
+	this.decay = 0.005;
+	this.release = 0.6;
 	this.saws = [];
 
 	for(var i=0; i<numSaws; i++){
 		var saw = this.context.createOscillator();
-		saw.type = 'sawtooth';
+		saw.type = 'sine';
 		saw.frequency.value = this.frequency;
 		saw.detune.value = -this.detune + i * 2 * this.detune / (this.numSaws - 1);
 		saw.start(this.context.currentTime);
@@ -307,6 +307,12 @@ FallingBall.prototype.update = function(){
 				break;
 
 		}
+	}
+
+	document.onmousedown = function(e){
+				fballarray[fballcounter] = new FallingBall(e.x ,e.y-25,50,0,0,65);
+				fballcounter = fballcounter + 1;
+
 	}
 
 	var canvas = document.getElementById("maincan");
