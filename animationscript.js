@@ -8,6 +8,9 @@ var keyAllowed = {};
 var ballarray = [];
 var fballarray = [];
 var fballcounter = 5;
+var growflag = 0;
+var growstep = 0;
+var growpoint = new Vector(0,0);
 
 //Synth Class
 
@@ -151,25 +154,26 @@ Vector.random = function() {
 };
 
 Vector.distancebetween = function(v,s) {
-	var dx = v.x - s.x,
-	dy = v.y - s.y;
+	var dx = v.x - s.x;
+	var dy = v.y - s.y;
 	return Math.sqrt(dx * dx + dy * dy);
 };
 
 Vector.bounceoff = function(start,finish){
-	var dx = finish.x - start.x,
-	dy = finish.y - start.y;
+	var dx = finish.x - start.x;
+	var dy = finish.y - start.y;
 	var length = Math.sqrt(dx * dx + dy * dy)
 	return new Vector(dx/length,dy/length);
 };
 
 //StaticBall Class
 
-function StaticBall(x,y,r) {
+function StaticBall(x,y,r,note) {
 	this.x = x || 0;
 	this.y = y || 0;
 	this.r = r || 0;
 	this.v = new Vector(x,y);
+	this.note = note;
 };
 
 StaticBall.prototype.draw = function(ctx){
@@ -194,6 +198,7 @@ function FallingBall(x,y,r,dx,dy,note) {
 	this.dv = new Vector(dx,dy);
 	this.r = r || 0;
 	this.note = note;
+	this.collided = 0;
 
 };
 
@@ -229,26 +234,18 @@ FallingBall.prototype.update = function(){
 		switch (e.keyCode){
 			case 65:
 				//startOsc(261.63);
-				fballarray[fballcounter] = new FallingBall(125+Math.random()*275,50,50,0,0,61);
-				fballcounter = fballcounter + 1;
 				synth.noteOn(60);
 				break;
 			case 83:
 				//startOsc(392.00);
-				fballarray[fballcounter] = new FallingBall(225+Math.random()*275,50,50,0,0,63);
-				fballcounter = fballcounter + 1;
 				synth.noteOn(62);
 				break;
 			case 68:
 				//startOsc(261.63);
-				fballarray[fballcounter] = new FallingBall(325+Math.random()*375,50,50,0,0,65);
-				fballcounter = fballcounter + 1;
 				synth.noteOn(64);
 				break;
 			case 70:
 				//startOsc(392.00);
-				fballarray[fballcounter] = new FallingBall(425+Math.random()*375,50,50,0,0,67);
-				fballcounter = fballcounter + 1;
 				synth.noteOn(65);
 				break;
 			case 74:
@@ -310,8 +307,27 @@ FallingBall.prototype.update = function(){
 	}
 
 	document.onmousedown = function(e){
-				fballarray[fballcounter] = new FallingBall(e.x ,e.y-25,50,0,0,65);
-				fballcounter = fballcounter + 1;
+				if (e.y < 200){
+					fballarray[fballcounter] = new FallingBall(e.x ,e.y-25,25,0,0,65);
+					fballcounter = fballcounter + 1;	
+				}
+				else {
+				growstep = 0;
+				growpoint.x = e.x;
+				growpoint.y = e.y-25;
+				growflag = 1;
+			}
+
+	}
+
+	document.onmouseup = function(e){
+		if (growpoint.y >= 150 && growpoint.y != 0){
+		growflag = 0;
+		note = Math.max(72 - Math.floor(growstep/25),60)
+		ballarray.push(new StaticBall(growpoint.x,growpoint.y,growstep,note));
+		growstep = 0;
+		growpoint.y = 0;
+		}
 
 	}
 
@@ -328,11 +344,11 @@ FallingBall.prototype.update = function(){
 		e.draw(ctx);
 	});
 
-	ballarray[0] = new StaticBall(300,600,150);
-	ballarray[1] = new StaticBall(550,800,50);
-	ballarray[2] = new StaticBall(950,700,200);
-	ballarray[3] = new StaticBall(1250,400,100);
-	ballarray[4] = new StaticBall(150,300,100);
+	//ballarray[0] = new StaticBall(300,600,150);
+	//ballarray[1] = new StaticBall(550,800,50);
+	//ballarray[2] = new StaticBall(950,700,200);
+	//ballarray[3] = new StaticBall(1250,400,100);
+	//ballarray[4] = new StaticBall(150,300,100);
 
 	ballarray.forEach(function(e,i,a){
 		e.draw(ctx);
@@ -342,28 +358,58 @@ FallingBall.prototype.update = function(){
 	
 	function animate() {
 
+		ctx.clearRect(0,0,canvas.width,canvas.height);
+		ctx.fillStyle = 'rgba(255, 10, 10, 0.1)';
+		ctx.fillRect(0,0,ctx.canvas.width,170);
+
+		synth.noteOff(60);
 		synth.noteOff(61);
+		synth.noteOff(62);
 		synth.noteOff(63);
+		synth.noteOff(64);
 		synth.noteOff(65);
+		synth.noteOff(66);
 		synth.noteOff(67);
+		synth.noteOff(68);
+		synth.noteOff(69);
+		synth.noteOff(70);
+		synth.noteOff(71);
+		synth.noteOff(72);
+		growstep = growstep + 1;
 
 		RequestID = requestAnimationFrame(animate);
 
 		fballarray.forEach(function(e,i,a){
 
-			ctx.clearRect(e.v.x - e.r - 5, e.v.y - e.r - 5, e.r * 3, e.r * 3);
 			e.update();
+			collidedupdate = 0;
+
 			ballarray.forEach(function(ea,ia,aa){
-				if (Vector.distancebetween(ea.v,e.v) < (ea.r+e.r)){
-					synth.noteOn(e.note);
+				if (Vector.distancebetween(ea.v,e.v) < (ea.r+e.r)-1){
+					//synth.noteOn(ea.note);
 					var length = e.dv.lengthof();
-					e.dv = Vector.bounceoff(ea.v,e.v);
-					e.dv = Vector.scale(e.dv, length/1.2);
+					if (e.collided < 3 && collidedupdate == 0 && (Vector.distancebetween(ea.v,e.v) > (ea.r+e.r)-10)){
+						e.dv = Vector.bounceoff(ea.v,e.v);
+						if (Math.abs(e.dv.x) < .0001){
+							e.dv.x = .01;
+						}
+						e.dv = Vector.scale(e.dv, length/1.2);
+						collidedupdate = 1;
+						synth.noteOn(ea.note);
+					}
+					else{
+						a.splice(i,1);
+					}
 				}
 				else{
-					e.dv = Vector.add(e.dv, grav);
+					e.collided = 0;
 				}
 			});
+			if (e.collided == 0){
+				e.dv = Vector.add(e.dv, grav);
+			}
+			e.collided = e.collided + collidedupdate;
+			collidedupdate = 0;
 		});
 
 		fballarray.forEach(function(e,i,a){
@@ -373,6 +419,16 @@ FallingBall.prototype.update = function(){
 		ballarray.forEach(function(e,i,a){
 			e.draw(ctx);
 		});
+
+		if (growflag == 1){
+			ctx.beginPath();
+			grd2 = ctx.createRadialGradient(growpoint.x + growstep, growpoint.y + growstep, 0, growpoint.x + growstep, growpoint.y + growstep, growstep *3.2);
+			grd2.addColorStop(1, 'rgba(10, 10, 255, 1)');
+			grd2.addColorStop(0, 'rgba(150, 150, 255, 1)');
+			ctx.arc(growpoint.x, growpoint.y, growstep, 0, Math.PI * 2, false);
+			ctx.fillStyle = grd2;
+			ctx.fill();
+		}
 
 	}
 
