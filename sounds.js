@@ -1,6 +1,4 @@
 var context = new AudioContext();
-
-
 var oscillator, gain;
 var keyAllowed = {};
 
@@ -121,11 +119,11 @@ document.onkeydown = function(e) {
 			//startOsc(261.63);
 			synth.noteOn(60);
 			break;
-		case 83:
+			case 83:
 			//startOsc(392.00);
 			synth.noteOn(62);
 			break;
-		case 68:
+			case 68:
 			//startOsc(261.63);
 			synth.noteOn(64);
 			break;
