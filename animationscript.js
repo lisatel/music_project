@@ -7,6 +7,7 @@ var oscillator, gain;
 var keyAllowed = {};
 var ballarray = [];
 var fballarray = [];
+var fballcounter = 5;
 
 //Synth Class
 
@@ -188,10 +189,11 @@ StaticBall.prototype.displace = function(x,y){
 
 //FallingBall Class
 
-function FallingBall(x,y,r,dx,dy) {
+function FallingBall(x,y,r,dx,dy,note) {
 	this.v = new Vector(x,y);
 	this.dv = new Vector(dx,dy);
 	this.r = r || 0;
+	this.note = note;
 
 };
 
@@ -215,87 +217,6 @@ FallingBall.prototype.update = function(){
 	this.v.y = this.v.y + this.dv.y;
 };
 
-
-//Input Definitions
-
-document.onkeydown = function(e) {
-	// if (keyAllowed[e.keyCode] === false) return;
-	// keyAllowed[e.keyCode] = false;
-	switch (e.keyCode){
-		case 65:
-			//startOsc(261.63);
-			synth.noteOn(60);
-			break;
-		case 83:
-			//startOsc(392.00);
-			synth.noteOn(62);
-			break;
-		case 68:
-			//startOsc(261.63);
-			synth.noteOn(64);
-			break;
-		case 70:
-			//startOsc(392.00);
-			synth.noteOn(65);
-			break;
-		case 74:
-			//startOsc(261.63);
-			synth.noteOn(67);
-			break;
-		case 75:
-			//startOsc(261.63);
-			synth.noteOn(69);
-			break;
-		case 76:
-			//startOsc(392.00);
-			synth.noteOn(71);
-			break;
-		case 186:
-			//startOsc(392.00);
-			synth.noteOn(72);
-			break;
-	}
-}
-
-document.onkeyup = function(e) {
-	//keyAllowed[e.keyCode] = true;
-	switch(e.keyCode){
-		case 65:
-			//startOsc(261.63);
-			synth.noteOff(60);
-			break;
-		case 83:
-			//startOsc(392.00);
-			synth.noteOff(62);
-			break;
-		case 68:
-			//startOsc(261.63);
-			synth.noteOff(64);
-			break;
-		case 70:
-			//startOsc(392.00);
-			synth.noteOff(65);
-			break;
-		case 74:
-			//startOsc(261.63);
-			synth.noteOff(67);
-			break;
-		case 75:
-			//startOsc(261.63);
-			synth.noteOff(69);
-			break;
-		case 76:
-			//startOsc(392.00);
-			synth.noteOff(71);
-			break;
-		case 186:
-			//startOsc(392.00);
-			synth.noteOff(72);
-			break;
-
-	}
-}
-
 //Main function
 
 (function() {
@@ -308,18 +229,26 @@ document.onkeyup = function(e) {
 		switch (e.keyCode){
 			case 65:
 				//startOsc(261.63);
+				fballarray[fballcounter] = new FallingBall(125+Math.random()*275,50,50,0,0,61);
+				fballcounter = fballcounter + 1;
 				synth.noteOn(60);
 				break;
 			case 83:
 				//startOsc(392.00);
+				fballarray[fballcounter] = new FallingBall(225+Math.random()*275,50,50,0,0,63);
+				fballcounter = fballcounter + 1;
 				synth.noteOn(62);
 				break;
 			case 68:
 				//startOsc(261.63);
+				fballarray[fballcounter] = new FallingBall(325+Math.random()*375,50,50,0,0,65);
+				fballcounter = fballcounter + 1;
 				synth.noteOn(64);
 				break;
 			case 70:
 				//startOsc(392.00);
+				fballarray[fballcounter] = new FallingBall(425+Math.random()*375,50,50,0,0,67);
+				fballcounter = fballcounter + 1;
 				synth.noteOn(65);
 				break;
 			case 74:
@@ -384,10 +313,10 @@ document.onkeyup = function(e) {
 	ctx.canvas.width  = window.innerWidth;
 	ctx.canvas.height = window.innerHeight;
 
-	fballarray[0] = new FallingBall(125+Math.random()*275,50,50,0,0);
-	fballarray[1] = new FallingBall(325+Math.random()*275,50,50,0,0);
-	fballarray[2] = new FallingBall(425+Math.random()*275,50,50,0,0);
-	fballarray[3] = new FallingBall(625+Math.random()*275,50,50,0,0);
+	//fballarray[0] = new FallingBall(125+Math.random()*275,50,50,0,0);
+	//fballarray[1] = new FallingBall(325+Math.random()*275,50,50,0,0);
+	//fballarray[2] = new FallingBall(425+Math.random()*275,50,50,0,0);
+	//fballarray[3] = new FallingBall(625+Math.random()*275,50,50,0,0);
 
 	fballarray.forEach(function(e,i,a){
 		e.draw(ctx);
@@ -407,7 +336,10 @@ document.onkeyup = function(e) {
 	
 	function animate() {
 
-		synth.noteOff(75);
+		synth.noteOff(61);
+		synth.noteOff(63);
+		synth.noteOff(65);
+		synth.noteOff(67);
 
 		RequestID = requestAnimationFrame(animate);
 
@@ -417,7 +349,7 @@ document.onkeyup = function(e) {
 			e.update();
 			ballarray.forEach(function(ea,ia,aa){
 				if (Vector.distancebetween(ea.v,e.v) < (ea.r+e.r)){
-					synth.noteOn(75);
+					synth.noteOn(e.note);
 					var length = e.dv.lengthof();
 					e.dv = Vector.bounceoff(ea.v,e.v);
 					e.dv = Vector.scale(e.dv, length/1.2);
