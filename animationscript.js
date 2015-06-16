@@ -1,8 +1,14 @@
+//Initialize Variables
+
+var canvas = document.getElementById("maincan");
 var context = new AudioContext();
+var ctx = canvas.getContext("2d");
 var oscillator, gain;
 var keyAllowed = {};
+var ballarray = [];
 
-//Synth class
+//Synth Class
+
 var Synth = function (context){
 	this.context = context;
 	this.numSaws = 3;
@@ -46,6 +52,7 @@ Synth.prototype.connect = function(target){
 }
 
 //Voice Class
+
 var Voice = function(context, frequency, numSaws, detune){
 	this.context = context;
 	this.frequency = frequency;
@@ -110,6 +117,75 @@ function off(){
 
 var synth = new Synth(context);
 synth.connect(context.destination);
+
+//Vector Class
+
+function Vector(x, y) {
+	this.x = x || 0;
+	this.y = y || 0;
+}
+
+Vector.prototype.lengthof = function() {
+	return Math.sqrt(this.x * this.x + this.y * this.y);
+};
+
+Vector.add = function(a, b) {
+	return new Vector(a.x + b.x, a.y + b.y);
+};
+
+Vector.sub = function(a, b) {
+	return new Vector(a.x - b.x, a.y - b.y);
+};
+
+Vector.scale = function(v, s) {
+	return new Vector(v.x * s, v.y *s);
+};
+
+Vector.random = function() {
+	return new Vector(
+		Math.random() * 2 - 1,
+		Math.random() * 2 - 1
+		);
+};
+
+Vector.distancebetween = function(v,s) {
+	var dx = v.x - s.x,
+	dy = v.y - s.y;
+	return Math.sqrt(dx * dx + dy * dy);
+};
+
+Vector.bounceoff = function(start,finish){
+	var dx = finish.x - start.x,
+	dy = finish.y - start.y;
+	var length = Math.sqrt(dx * dx + dy * dy)
+	return new Vector(dx/length,dy/length);
+};
+
+//StaticBall Class
+
+function StaticBall(x,y,r) {
+	this.x = x || 0;
+	this.y = y || 0;
+	this.r = r || 0;
+	this.v = new Vector(x,y);
+};
+
+StaticBall.prototype.draw = function(ctx){
+	ctx.beginPath();
+	grd2 = ctx.createRadialGradient(this.x + this.r, this.y + this.r, 0, this.x + this.r, this.y + this.r, this.r *3.2);
+	grd2.addColorStop(1, 'rgba(10, 10, 255, 1)');
+	grd2.addColorStop(0, 'rgba(150, 150, 255, 1)');
+	ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2, false);
+	ctx.fillStyle = grd2;
+	ctx.fill();
+};
+
+StaticBall.prototype.displace = function(x,y){
+	this.x = this.x + x;
+	this.y = this.y + y;
+};
+
+//Input Definitions
 
 document.onkeydown = function(e) {
 	// if (keyAllowed[e.keyCode] === false) return;
@@ -188,3 +264,75 @@ document.onkeyup = function(e) {
 
 	}
 }
+
+//Main function
+
+(function() {
+	var canvas = document.getElementById("maincan");
+	ctx.canvas.width  = window.innerWidth;
+	ctx.canvas.height = window.innerHeight;
+
+	var toppos = new Vector(125 + Math.random() * 275, 50);
+	var topR = 50;
+
+	ctx.beginPath();
+	grd1 = ctx.createRadialGradient(toppos.x + topR, toppos.y + topR, 0, toppos.x + topR, toppos.y + topR, topR *3.2);
+	grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
+	grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
+	ctx.arc(toppos.x, toppos.y, topR, 0, Math.PI * 2, false);
+	ctx.fillStyle = grd1;
+	ctx.fill();
+
+	ballarray[0] = new StaticBall(300,600,150);
+	ballarray[1] = new StaticBall(550,800,50);
+	ballarray[2] = new StaticBall(950,700,200);
+	ballarray[3] = new StaticBall(1250,400,100);
+	ballarray[4] = new StaticBall(150,300,100);
+
+	ballarray.forEach(function(e,i,a){
+		e.draw(ctx);
+	});
+
+	var topstart = new Vector(0,0);
+	var grav = new Vector(0,0.1);
+	
+	function animate() {
+
+		synth.noteOff(62);
+
+		RequestID = requestAnimationFrame(animate);
+
+		ctx.clearRect(toppos.x - topR - 5, toppos.y - topR - 5, topR * 3, topR * 3);
+
+		toppos.x = toppos.x + topstart.x;
+		toppos.y = toppos.y + topstart.y;
+
+		ballarray.forEach(function(e,i,a){
+			if (Vector.distancebetween(e.v,toppos) < (topR+e.r)){
+				synth.noteOn(62);
+				var length = topstart.lengthof();
+				topstart = Vector.bounceoff(e.v,toppos);
+				topstart = Vector.scale(topstart, length/1.2);
+			}
+			else{
+				topstart = Vector.add(topstart, grav);
+			}
+		});
+
+		ctx.beginPath();
+		grd1 = ctx.createRadialGradient(toppos.x + topR, toppos.y + topR, 0, toppos.x + topR, toppos.y + topR, topR *3.2);
+		grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
+		grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
+		ctx.arc(toppos.x, toppos.y, topR, 0, Math.PI * 2, false);
+		ctx.fillStyle = grd1;
+		ctx.fill();
+
+		ballarray.forEach(function(e,i,a){
+			e.draw(ctx);
+		});
+
+	}
+
+	requestAnimationFrame(animate);
+
+}());

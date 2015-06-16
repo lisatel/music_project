@@ -1,4 +1,4 @@
-//Vector
+//Vector Class
 
 function Vector(x, y) {
 	this.x = x || 0;
@@ -65,83 +65,162 @@ StaticBall.prototype.displace = function(x,y){
 	this.y = this.y + y;
 };
 
-(function() {
-	var canvas = document.getElementById("maincan");
-	if (canvas.getContext) {
-		var ctx = canvas.getContext("2d");
-		ctx.canvas.width  = window.innerWidth;
-		ctx.canvas.height = window.innerHeight;
+var ballarray = [];
 
-		var toppos = new Vector(125 + Math.random() * 275, 50);
-		var topR = 50;
-
-		var botpos = new Vector(300, 600);
-		var botR = 150;
-
-		ctx.beginPath();
-		grd1 = ctx.createRadialGradient(toppos.x + topR, toppos.y + topR, 0, toppos.x + topR, toppos.y + topR, topR *3.2);
-		grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
-		grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
-		ctx.arc(toppos.x, toppos.y, topR, 0, Math.PI * 2, false);
-		ctx.fillStyle = grd1;
-		ctx.fill();
-
-		var ballarray = [];
-
-		ballarray[0] = new StaticBall(300,600,150);
-		ballarray[1] = new StaticBall(550,800,100);
-		ballarray[2] = new StaticBall(950,700,200);
-		ballarray[3] = new StaticBall(1250,400,100);
-		ballarray[4] = new StaticBall(150,300,100);
-		ballarray[5] = new StaticBall()
-
-		ballarray.forEach(function(e,i,a){
-			e.draw(ctx);
-		});
-
-
-		var topstart = new Vector(0,0);
-		var grav = new Vector(0,0.1);
+document.onkeydown = function(e) {
+	// if (keyAllowed[e.keyCode] === false) return;
+	// keyAllowed[e.keyCode] = false;
+	switch (e.keyCode){
+		case 65:
+		console.log("stuff");
+		ballarray[6] = new StaticBall(10,600,150);
+		break;
+		case 83:
+			//startOsc(392.00);
+			synth.noteOn(62);
+			break;
+			case 68:
+			//startOsc(261.63);
+			synth.noteOn(64);
+			break;
+			case 70:
+			//startOsc(392.00);
+			synth.noteOn(65);
+			break;
+			case 74:
+			//startOsc(261.63);
+			synth.noteOn(67);
+			break;
+			case 75:
+			//startOsc(261.63);
+			synth.noteOn(69);
+			break;
+			case 76:
+			//startOsc(392.00);
+			synth.noteOn(71);
+			break;
+			case 186:
+			//startOsc(392.00);
+			synth.noteOn(72);
+			break;
+		}
 	}
 
+	document.onkeyup = function(e) {
+	//keyAllowed[e.keyCode] = true;
+	switch(e.keyCode){
+		case 65:
+			//startOsc(261.63);
+			synth.noteOff(60);
+			break;
+			case 83:
+			//startOsc(392.00);
+			synth.noteOff(62);
+			break;
+			case 68:
+			//startOsc(261.63);
+			synth.noteOff(64);
+			break;
+			case 70:
+			//startOsc(392.00);
+			synth.noteOff(65);
+			break;
+			case 74:
+			//startOsc(261.63);
+			synth.noteOff(67);
+			break;
+			case 75:
+			//startOsc(261.63);
+			synth.noteOff(69);
+			break;
+			case 76:
+			//startOsc(392.00);
+			synth.noteOff(71);
+			break;
+			case 186:
+			//startOsc(392.00);
+			synth.noteOff(72);
+			break;
 
-	function animate() {
-
-		synth.noteOff(62);
-
-		RequestID = requestAnimationFrame(animate);
-
-		ctx.clearRect(toppos.x - topR - 5, toppos.y - topR - 5, topR * 3, topR * 3);
-
-		toppos.x = toppos.x + topstart.x;
-		toppos.y = toppos.y + topstart.y;
-
-		ballarray.forEach(function(e,i,a){
-			if (Vector.distancebetween(e.v,toppos) < (topR+e.r)){
-				synth.noteOn(62);
-				var length = topstart.lengthof();
-				topstart = Vector.bounceoff(e.v,toppos);
-				topstart = Vector.scale(topstart, length/1.2);
-			}
-			else{
-				topstart = Vector.add(topstart, grav);
-			}
-		});
-
-		ctx.beginPath();
-		grd1 = ctx.createRadialGradient(toppos.x + topR, toppos.y + topR, 0, toppos.x + topR, toppos.y + topR, topR *3.2);
-		grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
-		grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
-		ctx.arc(toppos.x, toppos.y, topR, 0, Math.PI * 2, false);
-		ctx.fillStyle = grd1;
-		ctx.fill();
-
-		ballarray.forEach(function(e,i,a){
-			e.draw(ctx);
-		});
-
+		}
 	}
 
-	requestAnimationFrame(animate);
+	(function() {
+		var canvas = document.getElementById("maincan");
+		if (canvas.getContext) {
+			var ctx = canvas.getContext("2d");
+			ctx.canvas.width  = window.innerWidth;
+			ctx.canvas.height = window.innerHeight;
 
-}());
+			var toppos = new Vector(125 + Math.random() * 275, 50);
+			var topR = 50;
+
+			var botpos = new Vector(300, 600);
+			var botR = 150;
+
+			ctx.beginPath();
+			grd1 = ctx.createRadialGradient(toppos.x + topR, toppos.y + topR, 0, toppos.x + topR, toppos.y + topR, topR *3.2);
+			grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
+			grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
+			ctx.arc(toppos.x, toppos.y, topR, 0, Math.PI * 2, false);
+			ctx.fillStyle = grd1;
+			ctx.fill();
+
+			var ballarray = [];
+
+			ballarray[0] = new StaticBall(300,600,150);
+			ballarray[1] = new StaticBall(550,800,50);
+			ballarray[2] = new StaticBall(950,700,200);
+			ballarray[3] = new StaticBall(1250,400,100);
+			ballarray[4] = new StaticBall(150,300,100);
+
+			ballarray.forEach(function(e,i,a){
+				e.draw(ctx);
+			});
+
+
+			var topstart = new Vector(0,0);
+			var grav = new Vector(0,0.1);
+		}
+
+
+		function animate() {
+
+			synth.noteOff(62);
+
+			RequestID = requestAnimationFrame(animate);
+
+			ctx.clearRect(toppos.x - topR - 5, toppos.y - topR - 5, topR * 3, topR * 3);
+
+			toppos.x = toppos.x + topstart.x;
+			toppos.y = toppos.y + topstart.y;
+
+			ballarray.forEach(function(e,i,a){
+				if (Vector.distancebetween(e.v,toppos) < (topR+e.r)){
+					synth.noteOn(62);
+					var length = topstart.lengthof();
+					topstart = Vector.bounceoff(e.v,toppos);
+					topstart = Vector.scale(topstart, length/1.2);
+				}
+				else{
+					topstart = Vector.add(topstart, grav);
+				}
+			});
+
+			ctx.beginPath();
+			grd1 = ctx.createRadialGradient(toppos.x + topR, toppos.y + topR, 0, toppos.x + topR, toppos.y + topR, topR *3.2);
+			grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
+			grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
+			ctx.arc(toppos.x, toppos.y, topR, 0, Math.PI * 2, false);
+			ctx.fillStyle = grd1;
+			ctx.fill();
+
+			ballarray.forEach(function(e,i,a){
+				e.draw(ctx);
+			});
+
+		}
+
+		requestAnimationFrame(animate);
+
+	}());
