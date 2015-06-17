@@ -16,7 +16,7 @@ var growpoint = new Vector(0,0);
 
 var Synth = function (context){
 	this.context = context;
-	this.numSaws = 8;
+	this.numSaws = 2;
 	this.detune = 20;
 	this.voices = [];
 	this.output = this.context.createGain();
@@ -78,20 +78,23 @@ var Voice = function(context, frequency, numSaws, detune){
 	this.detune = detune;
 	this.output = this.context.createGain();
 	this.maxGain = 1/this.numSaws;
-	this.attack = 0.001;
-	this.decay = 0.005;
+	this.attack = 0.005;
+	this.decay = 0.01;
 	this.release = 0.6;
 	this.saws = [];
 
-	for(var i=0; i<numSaws; i++){
+	for(var i=1; i<numSaws+1; i++){
 		var saw = this.context.createOscillator();
 		// if (i == 5) {saw.type = 'sawtooth';}
 		// else {saw.type = 'sine';}
 		saw.type = 'sine';
-		saw.frequency.value = this.frequency;
-		saw.detune.value = -this.detune + i * 2 * this.detune / (this.numSaws - 1);
-		
-		saw.connect(this.output);
+		saw.frequency.value = this.frequency * i;
+		//saw.detune.value = -this.detune + i * 2 * this.detune / (this.numSaws - 1);
+		var amplitude = this.context.createGain();
+		amplitude.gain.value = +(1/i.toFixed(3));
+
+		saw.connect(amplitude);
+		amplitude.connect(this.output);
 		saw.start(this.context.currentTime);
 		this.saws.push(saw);
 	}
@@ -143,7 +146,7 @@ var SlapbackNode = function() {
 	var feedback = context.createGain();
 	var wetLevel = context.createGain();
 
-	delay.delayTime.value = 0.15;
+	delay.delayTime.value = 0.25;
 	feedback.gain.value = 0.25;
 	wetLevel.gain.value = 0.25;
 
