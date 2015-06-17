@@ -367,7 +367,7 @@ FallingBall.prototype.update = function(){
 	document.onmouseup = function(e){
 		if (growpoint.y >= 150 && growpoint.y != 0){
 		growflag = 0;
-		note = Math.max(72 - Math.floor(growstep/25),60)
+		note = Math.max(72 - Math.floor(growstep/15),60)
 		ballarray.push(new StaticBall(growpoint.x,growpoint.y,growstep,note));
 		growstep = 0;
 		growpoint.y = 0;
@@ -419,7 +419,7 @@ FallingBall.prototype.update = function(){
 		synth.noteOff(70);
 		synth.noteOff(71);
 		synth.noteOff(72);
-		growstep = growstep + 1;
+		growstep = growstep + 2;
 
 		RequestID = requestAnimationFrame(animate);
 
@@ -433,10 +433,10 @@ FallingBall.prototype.update = function(){
 					//synth.noteOn(ea.note);
 					var length = e.dv.lengthof();
 					console.log(length);
-					if (e.collided < 3 && collidedupdate == 0 && (Vector.distancebetween(ea.v,e.v) > ((ea.r+e.r)-(length+2)))){
+					if (e.collided < 3 && collidedupdate == 0 && (Vector.distancebetween(ea.v,e.v) > ((ea.r+e.r)-(length+1)))){
 						e.dv = Vector.bounceoff(ea.v,e.v);
 						if (Math.abs(e.dv.x) < .0001){
-							e.dv.x = .01;
+							e.dv.x = .05;
 						}
 						e.dv = Vector.scale(e.dv, length/1.2);
 						collidedupdate = 1;
