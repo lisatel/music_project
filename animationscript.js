@@ -432,7 +432,8 @@ FallingBall.prototype.update = function(){
 				if (Vector.distancebetween(ea.v,e.v) < (ea.r+e.r)-1){
 					//synth.noteOn(ea.note);
 					var length = e.dv.lengthof();
-					if (e.collided < 3 && collidedupdate == 0 && (Vector.distancebetween(ea.v,e.v) > (ea.r+e.r)-10)){
+					console.log(length);
+					if (e.collided < 3 && collidedupdate == 0 && (Vector.distancebetween(ea.v,e.v) > ((ea.r+e.r)-(length+2)))){
 						e.dv = Vector.bounceoff(ea.v,e.v);
 						if (Math.abs(e.dv.x) < .0001){
 							e.dv.x = .01;
