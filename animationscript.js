@@ -16,10 +16,23 @@ var growpoint = new Vector(0,0);
 
 var Synth = function (context){
 	this.context = context;
-	this.numSaws = 3;
-	this.detune = 12;
+	this.numSaws = 8;
+	this.detune = 20;
 	this.voices = [];
 	this.output = this.context.createGain();
+}
+
+Synth.prototype.noteHit = function(note, time){
+	if (time == null){
+		time = this.context.currentTime;
+	}
+
+	var freq = noteToFrequency(note);
+	var voice = new Voice(this.context, freq, this.numSaws, this.detune);
+	voice.connect(this.output);
+	voice.start(time);
+	voice.stop(time + 0.3);
+	return;
 }
 
 Synth.prototype.noteOn = function(note, time){
@@ -72,11 +85,14 @@ var Voice = function(context, frequency, numSaws, detune){
 
 	for(var i=0; i<numSaws; i++){
 		var saw = this.context.createOscillator();
+		// if (i == 5) {saw.type = 'sawtooth';}
+		// else {saw.type = 'sine';}
 		saw.type = 'sine';
 		saw.frequency.value = this.frequency;
 		saw.detune.value = -this.detune + i * 2 * this.detune / (this.numSaws - 1);
-		saw.start(this.context.currentTime);
+		
 		saw.connect(this.output);
+		saw.start(this.context.currentTime);
 		this.saws.push(saw);
 	}
 }
@@ -106,23 +122,48 @@ function noteToFrequency(note){
 	return Math.pow(2, (note-69)/12) * 440.0;
 }
 
-function startOsc(frequency){
-	oscillator = context.createOscillator();
-	oscillator.type = 0;
-	oscillator.frequency.value = frequency;
-	oscillator.start(0);
+// function startOsc(frequency){
+// 	oscillator = context.createOscillator();
+// 	oscillator.type = 0;
+// 	oscillator.frequency.value = frequency;
+// 	oscillator.start(0);
 
-	oscillator.connect(context.destination);
-}
+// 	oscillator.connect(context.destination);
+// }
 
-function off(){
-	oscillator.stop(0);
-	oscillator.disconnect();
+// function off(){
+// 	oscillator.stop(0);
+// 	oscillator.disconnect();
+// }
+
+var SlapbackNode = function() {
+	this.input = context.createGain();
+	var output = context.createGain();
+	var delay = context.createDelay();
+	var feedback = context.createGain();
+	var wetLevel = context.createGain();
+
+	delay.delayTime.value = 0.15;
+	feedback.gain.value = 0.25;
+	wetLevel.gain.value = 0.25;
+
+	this.input.connect(delay);
+	this.input.connect(output);
+	delay.connect(feedback);
+	delay.connect(wetLevel);
+	feedback.connect(delay);
+	wetLevel.connect(output);
+
+	this.connect = function(target){
+		output.connect(target);
+	}
 }
 
 var synth = new Synth(context);
-synth.connect(context.destination);
-
+var slap = new SlapbackNode();
+ synth.connect(slap.input);
+ slap.connect(context.destination);
+//synth.connect(context.destination);
 //Vector Class
 
 function Vector(x, y) {
