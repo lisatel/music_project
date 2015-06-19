@@ -1,8 +1,19 @@
+//Initialize Variables
+
+var canvas = document.getElementById("maincan");
+var context = new AudioContext();
+var ctx = canvas.getContext("2d");
+var oscillator, gain;
+var keyAllowed = {};
+var asteroids = [];
+var planets = [];
+var rings = [];
+
 //Synth Class
 
 var Synth = function (context){
 	this.context = context;
-	this.numSaws = 8;
+	this.numSaws = 2;
 	this.detune = 20;
 	this.voices = [];
 	this.output = this.context.createGain();
@@ -64,20 +75,20 @@ var Voice = function(context, frequency, numSaws, detune){
 	this.detune = detune;
 	this.output = this.context.createGain();
 	this.maxGain = 1/this.numSaws;
-	this.attack = 0.001;
-	this.decay = 0.005;
+	this.attack = 0.005;
+	this.decay = 0.01;
 	this.release = 0.6;
 	this.saws = [];
 
-	for(var i=0; i<numSaws; i++){
+	for(var i=1; i<numSaws+1; i++){
 		var saw = this.context.createOscillator();
-		// if (i == 5) {saw.type = 'sawtooth';}
-		// else {saw.type = 'sine';}
 		saw.type = 'sine';
-		saw.frequency.value = this.frequency;
-		saw.detune.value = -this.detune + i * 2 * this.detune / (this.numSaws - 1);
-		
-		saw.connect(this.output);
+		saw.frequency.value = this.frequency * i;
+		var amplitude = this.context.createGain();
+		amplitude.gain.value = +(1/i.toFixed(3));
+
+		saw.connect(amplitude);
+		amplitude.connect(this.output);
 		saw.start(this.context.currentTime);
 		this.saws.push(saw);
 	}
@@ -108,20 +119,6 @@ function noteToFrequency(note){
 	return Math.pow(2, (note-69)/12) * 440.0;
 }
 
-// function startOsc(frequency){
-// 	oscillator = context.createOscillator();
-// 	oscillator.type = 0;
-// 	oscillator.frequency.value = frequency;
-// 	oscillator.start(0);
-
-// 	oscillator.connect(context.destination);
-// }
-
-// function off(){
-// 	oscillator.stop(0);
-// 	oscillator.disconnect();
-// }
-
 var SlapbackNode = function() {
 	this.input = context.createGain();
 	var output = context.createGain();
@@ -129,7 +126,7 @@ var SlapbackNode = function() {
 	var feedback = context.createGain();
 	var wetLevel = context.createGain();
 
-	delay.delayTime.value = 0.15;
+	delay.delayTime.value = 0.25;
 	feedback.gain.value = 0.25;
 	wetLevel.gain.value = 0.25;
 
@@ -149,7 +146,7 @@ var synth = new Synth(context);
 var slap = new SlapbackNode();
  synth.connect(slap.input);
  slap.connect(context.destination);
-//synth.connect(context.destination);
+
 //Vector Class
 
 function Vector(x, y) {
@@ -185,3 +182,90 @@ Vector.distancebetween = function(v,s) {
 	var dy = v.y - s.y;
 	return Math.sqrt(dx * dx + dy * dy);
 };
+
+Vector.normalize = function(v){
+	return new Vector(v.x/v.lengthof(),v.y/v.lengthof());
+};
+
+function Asteroid(x,y,r,dx,dy) {
+	this.v = new Vector(x,y);
+	this.dv = new Vector(dx,dy);
+	this.r = r || 0;
+
+};
+
+Asteroid.prototype.draw = function(ctx){
+	ctx.beginPath();
+	grd1 = ctx.createRadialGradient(this.v.x + this.r, this.v.y + this.r, 0, this.v.x + this.r, this.v.y + this.r, this.r *3.2);
+	grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
+	grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
+	ctx.arc(this.v.x, this.v.y, this.r, 0, Math.PI * 2, false);
+	ctx.fillStyle = grd1;
+	ctx.fill();
+};
+
+Asteroid.prototype.displace = function(x,y){
+	this.v.x = this.v.x + x;
+	this.v.y = this.v.y + y;
+};
+
+Asteroid.prototype.update = function(){
+	this.v.x = this.v.x + this.dv.x;
+	this.v.y = this.v.y + this.dv.y;
+};
+
+function Planet(x,y,r,dx,dy) {
+	this.v = new Vector(x,y);
+	this.r = r || 0;
+	this.collided = 0;
+
+};
+
+Planet.prototype.draw = function(ctx){
+	ctx.beginPath();
+	grd2 = ctx.createRadialGradient(this.v.x + this.r, this.v.y + this.r, 0, this.v.x + this.r, this.v.y + this.r, this.r *3.2);
+	grd2.addColorStop(1, 'rgba(255, 10, 10, 1)');
+	grd2.addColorStop(0, 'rgba(255, 150, 150, 1)');
+	ctx.arc(this.v.x, this.v.y, this.r, 0, Math.PI * 2, false);
+	ctx.fillStyle = grd2;
+	ctx.fill();
+};
+
+(function() {
+
+	document.onmousedown = function(e){
+		asteroids.push(new Asteroid(e.x,e.y,10,4,0));
+	}
+
+	var canvas = document.getElementById("maincan");
+	ctx.canvas.width  = window.innerWidth;
+	ctx.canvas.height = window.innerHeight;
+
+	planets.push(new Planet(400,400,200));
+
+	function animate() {
+
+		ctx.clearRect(0,0,canvas.width,canvas.height);
+
+		RequestID = requestAnimationFrame(animate);
+
+		planets.forEach(function(e,i,a){
+			e.draw(ctx);
+		});
+
+		asteroids.forEach(function(ea,ia,aa){
+			planets.forEach(function(ep,ip,ap){
+				gravdir = Vector.normalize(Vector.sub(ep.v,ea.v));
+				distance = Vector.distancebetween(ea.v,ep.v);
+				force = Vector.scale(gravdir, 4000/(distance*distance));
+				ea.dv = Vector.add(ea.dv,force);
+			});
+			ea.update();
+			ea.draw(ctx);
+		});
+
+	}
+
+	requestAnimationFrame(animate);
+
+}());

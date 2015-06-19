@@ -203,11 +203,10 @@ Vector.distancebetween = function(v,s) {
 	return Math.sqrt(dx * dx + dy * dy);
 };
 
-Vector.bounceoff = function(start,finish){
-	var dx = finish.x - start.x;
-	var dy = finish.y - start.y;
-	var length = Math.sqrt(dx * dx + dy * dy)
-	return new Vector(dx/length,dy/length);
+Vector.bounceoff = function(v,n){
+	var dot = v.x * n.x + v.y * n.y;
+	dot = dot/(n.lengthof()*n.lengthof());
+	return new Vector(-1*(n.x*2*dot-v.x),-1*(n.y*2*dot-v.y));
 };
 
 //StaticBall Class
@@ -430,15 +429,15 @@ FallingBall.prototype.update = function(){
 
 			ballarray.forEach(function(ea,ia,aa){
 				if (Vector.distancebetween(ea.v,e.v) < (ea.r+e.r)-1){
-					//synth.noteOn(ea.note);
+					synth.noteOn(ea.note);
 					var length = e.dv.lengthof();
-					console.log(length);
 					if (e.collided < 3 && collidedupdate == 0 && (Vector.distancebetween(ea.v,e.v) > ((ea.r+e.r)-(length+1)))){
-						e.dv = Vector.bounceoff(ea.v,e.v);
+						e.dv = Vector.scale(Vector.bounceoff(e.dv,Vector.sub(e.v,ea.v)),.95);
+						console.log(Vector.bounceoff(new Vector(3,-4),new Vector(0,1)));
 						if (Math.abs(e.dv.x) < .0001){
 							e.dv.x = .05;
 						}
-						e.dv = Vector.scale(e.dv, length/1.2);
+						//e.dv = Vector.scale(e.dv, length/1.2);
 						collidedupdate = 1;
 						synth.noteOn(ea.note);
 					}
