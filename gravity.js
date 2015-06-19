@@ -234,31 +234,30 @@ Planet.prototype.draw = function(ctx){
 
 (function() {
 
-	var dragx;
-	var dragy;
-	var curx;
-	var cury;
-	var dragging = true;
+	var dragging = false;
+	var dragv = new Vector(0,0);
+	var curv = new Vector(0,0);
 
 	maincan.onmousedown = function(e){
-		dragx = e.x;
-		dragy = e.y;
-		curx = e.x;
-		cury = e.y;
+		
+		dragv.x = e.x;
+		dragv.y = e.y;
+		curv.x = e.x;
+		curv.y = e.y;
 		e.preventDefault();
 		dragging = true;
 	}
 
 	maincan.onmousemove = function(e){
 		if (dragging) {
-			curx = e.x;
-			cury = e.y;
+			curv.x = e.x;
+			curv.y = e.y;
 		}
 
 	}
 
 	maincan.onmouseup = function(e){
-		asteroids.push(new Asteroid(dragx,dragy,asteroidr,(e.x-dragx)/50,(e.y-dragy)/50));
+		asteroids.push(new Asteroid(dragv.x,dragv.y,asteroidr,(e.x-dragv.x)/50,(e.y-dragv.y)/50));
 		dragging = false;
 	}
 
@@ -280,20 +279,33 @@ Planet.prototype.draw = function(ctx){
 
 		if (dragging){
 
+
 		ctx.beginPath();
-		ctx.moveTo(dragx,dragy);
+		ctx.moveTo(dragv.x,dragv.y);
 		ctx.lineCap='round';
 		ctx.strokeStyle = '#000';
-		console.log(curx + " " + cury)	
-		ctx.lineTo(curx,cury);
 		ctx.lineWidth = 5;
+		pos = dragv;
+		posdv = new Vector((curv.x-dragv.x)/50,(curv.y-dragv.y)/50);
+
+		for(var i = 0; i < 1000; i++){
+			planets.forEach(function(ep,ip,ap){
+				predgrav = Vector.normalize(Vector.sub(ep.v,pos));
+				pdistance = Vector.distancebetween(pos,ep.v);
+				pforce = Vector.scale(predgrav, 4000/(pdistance*pdistance));
+				posdv = Vector.add(posdv,pforce);
+				ctx.lineTo(pos.x,pos.y);
+				pos = Vector.add(pos,posdv);
+			});
+		}
+
 		ctx.stroke();
 
 		ctx.beginPath();
-		grd1 = ctx.createRadialGradient(dragx + asteroidr, dragy + asteroidr, 0, dragx + asteroidr, dragy + asteroidr, asteroidr *3.2);
+		grd1 = ctx.createRadialGradient(dragv.x + asteroidr, dragv.y + asteroidr, 0, dragv.x + asteroidr, dragv.y + asteroidr, asteroidr *3.2);
 		grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
 		grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
-		ctx.arc(dragx, dragy, asteroidr, 0, Math.PI * 2, false);
+		ctx.arc(dragv.x, dragv.y, asteroidr, 0, Math.PI * 2, false);
 		ctx.fillStyle = grd1;
 		ctx.fill();
 
