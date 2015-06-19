@@ -8,6 +8,7 @@ var keyAllowed = {};
 var asteroids = [];
 var planets = [];
 var rings = [];
+var asteroidr = 10;
 
 //Synth Class
 
@@ -233,8 +234,32 @@ Planet.prototype.draw = function(ctx){
 
 (function() {
 
-	document.onmousedown = function(e){
-		asteroids.push(new Asteroid(e.x,e.y,10,4,0));
+	var dragx;
+	var dragy;
+	var curx;
+	var cury;
+	var dragging = true;
+
+	maincan.onmousedown = function(e){
+		dragx = e.x;
+		dragy = e.y;
+		curx = e.x;
+		cury = e.y;
+		e.preventDefault();
+		dragging = true;
+	}
+
+	maincan.onmousemove = function(e){
+		if (dragging) {
+			curx = e.x;
+			cury = e.y;
+		}
+
+	}
+
+	maincan.onmouseup = function(e){
+		asteroids.push(new Asteroid(dragx,dragy,asteroidr,(e.x-dragx)/50,(e.y-dragy)/50));
+		dragging = false;
 	}
 
 	var canvas = document.getElementById("maincan");
@@ -252,6 +277,27 @@ Planet.prototype.draw = function(ctx){
 		planets.forEach(function(e,i,a){
 			e.draw(ctx);
 		});
+
+		if (dragging){
+
+		ctx.beginPath();
+		ctx.moveTo(dragx,dragy);
+		ctx.lineCap='round';
+		ctx.strokeStyle = '#000';
+		console.log(curx + " " + cury)	
+		ctx.lineTo(curx,cury);
+		ctx.lineWidth = 5;
+		ctx.stroke();
+
+		ctx.beginPath();
+		grd1 = ctx.createRadialGradient(dragx + asteroidr, dragy + asteroidr, 0, dragx + asteroidr, dragy + asteroidr, asteroidr *3.2);
+		grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
+		grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
+		ctx.arc(dragx, dragy, asteroidr, 0, Math.PI * 2, false);
+		ctx.fillStyle = grd1;
+		ctx.fill();
+
+		}
 
 		asteroids.forEach(function(ea,ia,aa){
 			planets.forEach(function(ep,ip,ap){
