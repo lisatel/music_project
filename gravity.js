@@ -10,6 +10,8 @@ var planets = [];
 var rings = [];
 var asteroidr = 10;
 var rings = [];
+var img = new Image();
+img.src = "planet.svg"
 
 //Synth Class
 
@@ -198,11 +200,8 @@ function Asteroid(x,y,r,dx,dy) {
 
 Asteroid.prototype.draw = function(ctx){
 	ctx.beginPath();
-	grd1 = ctx.createRadialGradient(this.v.x + this.r, this.v.y + this.r, 0, this.v.x + this.r, this.v.y + this.r, this.r *3.2);
-	grd1.addColorStop(1, 'rgba(255, 10, 10, 1)');
-	grd1.addColorStop(0, 'rgba(255, 150, 150, 1)');
 	ctx.arc(this.v.x, this.v.y, this.r, 0, Math.PI * 2, false);
-	ctx.fillStyle = grd1;
+	ctx.fillStyle = "#fff";
 	ctx.fill();
 };
 
@@ -224,13 +223,14 @@ function Planet(x,y,r,dx,dy) {
 };
 
 Planet.prototype.draw = function(ctx){
-	ctx.beginPath();
+	/**ctx.beginPath();
 	grd2 = ctx.createRadialGradient(this.v.x + this.r, this.v.y + this.r, 0, this.v.x + this.r, this.v.y + this.r, this.r *3.2);
 	grd2.addColorStop(1, 'rgba(255, 10, 10, 1)');
 	grd2.addColorStop(0, 'rgba(255, 150, 150, 1)');
 	ctx.arc(this.v.x, this.v.y, this.r, 0, Math.PI * 2, false);
 	ctx.fillStyle = grd2;
-	ctx.fill();
+	ctx.fill();*/
+	ctx.drawImage(img,this.v.x-this.r,this.v.y-this.r,this.r*2,this.r*2);
 };
 
 function Ring(a,b,x,y){
@@ -245,7 +245,7 @@ Ring.prototype.draw = function(ctx){
 	ctx.moveTo(this.startp.x,this.startp.y);
 	ctx.lineCap='round';
 	ctx.strokeStyle = '#66FF00';
-	ctx.lineWidth = 5;
+	ctx.lineWidth = 3;
 	ctx.lineTo(this.end.x,this.end.y);
 	ctx.stroke();
 };
@@ -315,8 +315,8 @@ Ring.prototype.distancefrom = function(x,y){
 		ctx.beginPath();
 		ctx.moveTo(dragv.x,dragv.y);
 		ctx.lineCap='round';
-		ctx.strokeStyle = '#000';
-		ctx.lineWidth = 5;
+		ctx.strokeStyle = '#fff';
+		ctx.lineWidth = 2;
 		pos = dragv;
 		posdv = new Vector((curv.x-dragv.x)/50,(curv.y-dragv.y)/50);
 
