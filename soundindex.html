@@ -1,0 +1,68 @@
+<head>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<style>
+		button{
+			height:50px;
+			width:50px;
+			border-radius: 50px;
+			border: 1px solid;
+			margin-bottom: 15px;
+			margin-right:15px;
+
+		}
+		.off{
+			background-color: white;
+		}
+		.on{
+			background-color: #00ff7f;
+		}
+
+		.label {
+	display: inline-block;
+	vertical-align: top;
+	width: 60px;
+	position: relative;
+	text-align: right;
+	margin-right: 15px;
+}
+
+
+	</style>	
+</head>
+<body>
+	
+	<canvas id="maincan" width="300" height-"300"> </canvas>
+	<script type="text/javascript" language="javascript" src="sounds.js"></script>
+	<div class = " buttons_row">
+		<span class="label"> Kick </span>
+		<button id="kick_0" class = "off" onclick="handleClick(this)"> </button>
+		<button id="kick_1" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="kick_2" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="kick_3" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="kick_4" class = "off" onclick="handleClick(this)"> </button>
+		<button id="kick_5" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="kick_6" class = "off" onclick="handleClick(this)"> </button>
+		<button id="kick_7" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="kick_8" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="kick_9" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="kick_10" class = "off" onclick="handleClick(this)"> </button>
+		<button id="kick_11" class = "off" onclick="handleClick(this)"> </button>
+	</div>
+	<div class = " buttons_row">
+		<span class="label"> Snare </span>
+		<button id="snare_0" class = "off" onclick="handleClick(this)"> </button>
+		<button id="snare_1" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="snare_2" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="snare_3" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="snare_4" class = "off" onclick="handleClick(this)"> </button>
+		<button id="snare_5" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="snare_6" class = "off" onclick="handleClick(this)"> </button>
+		<button id="snare_7" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="snare_8" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="snare_9" class = "off" onclick="handleClick(this)"> </button> 
+		<button id="snare_10" class = "off" onclick="handleClick(this)"> </button>
+		<button id="snare_11" class = "off" onclick="handleClick(this)"> </button>
+	</div>
+	<button onclick="handlePlay()"> Play </button>
+	<button onclick="handleStop()"> Stop </button>
+</body>
