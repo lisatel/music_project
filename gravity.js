@@ -9,6 +9,7 @@ var asteroids = [];
 var planets = [];
 var rings = [];
 var asteroidr = 10;
+var rings = [];
 
 //Synth Class
 
@@ -232,6 +233,29 @@ Planet.prototype.draw = function(ctx){
 	ctx.fill();
 };
 
+function Ring(a,b,x,y){
+	this.startp = new Vector(a,b);
+	this.end = new Vector(x,y);
+	this.mid = new Vector((a+x)/2,(y+b)/2);
+	this.radius = Vector.sub(this.startp,this.mid).lengthof();
+};
+
+Ring.prototype.draw = function(ctx){
+	ctx.beginPath();
+	ctx.moveTo(this.startp.x,this.startp.y);
+	ctx.lineCap='round';
+	ctx.strokeStyle = '#66FF00';
+	ctx.lineWidth = 5;
+	ctx.lineTo(this.end.x,this.end.y);
+	ctx.stroke();
+};
+
+Ring.prototype.distancefrom = function(x,y){
+	var line = Math.abs((this.end.y-this.startp.y)*x - (this.end.x - this.startp.x)*y + this.end.x*this.startp.y - this.end.y*this.startp.x)/Math.sqrt((this.end.y-this.startp.y)*(this.end.y-this.startp.y) - (this.end.x-this.startp.x)*(this.end.x-this.startp.x));
+	var radius = Vector.sub(new Vector(x,y), this.mid).lengthof() - this.radius;
+	return Math.max(line,radius);
+};
+
 (function() {
 
 	var dragging = false;
@@ -265,15 +289,23 @@ Planet.prototype.draw = function(ctx){
 	ctx.canvas.width  = window.innerWidth;
 	ctx.canvas.height = window.innerHeight;
 
-	planets.push(new Planet(400,400,200));
+	planets.push(new Planet(400,400,100));
+	planets.push(new Planet(1000,400,100));
+	rings.push(new Ring(700,300,700,500));
+	rings.push(new Ring(400,50,400, 750))
 
 	function animate() {
 
 		ctx.clearRect(0,0,canvas.width,canvas.height);
+		synth.noteOff(60);
 
 		RequestID = requestAnimationFrame(animate);
 
 		planets.forEach(function(e,i,a){
+			e.draw(ctx);
+		});
+
+		rings.forEach(function(e,i,a){
 			e.draw(ctx);
 		});
 
@@ -294,9 +326,9 @@ Planet.prototype.draw = function(ctx){
 				pdistance = Vector.distancebetween(pos,ep.v);
 				pforce = Vector.scale(predgrav, 4000/(pdistance*pdistance));
 				posdv = Vector.add(posdv,pforce);
-				ctx.lineTo(pos.x,pos.y);
-				pos = Vector.add(pos,posdv);
 			});
+			ctx.lineTo(pos.x,pos.y);
+			pos = Vector.add(pos,posdv);
 		}
 
 		ctx.stroke();
@@ -317,6 +349,11 @@ Planet.prototype.draw = function(ctx){
 				distance = Vector.distancebetween(ea.v,ep.v);
 				force = Vector.scale(gravdir, 4000/(distance*distance));
 				ea.dv = Vector.add(ea.dv,force);
+			});
+			rings.forEach(function(er,ir,ar){
+				if(er.distancefrom(ea.v.x,ea.v.y) < ea.dv.lengthof()){
+					synth.noteOn(60);
+				}
 			});
 			ea.update();
 			ea.draw(ctx);
