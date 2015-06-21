@@ -280,7 +280,7 @@ document.onkeyup = function(e) {
 }
 
 var drumMachine = {
-	"tempo": 100,
+	"tempo": 50,
 	"kickRhythm": [0,0,0,0,0,0,0,0,0,0,0,0],
 	"snareRhythm": [0,0,0,0,0,0,0,0,0,0,0,0]
 };
@@ -291,6 +291,7 @@ var noteTime;
 var rhythmCount = 0;
 var loopLength = 12;
 var timeout;
+var playing;
 
 function handleClick(element){
 	var rhythm;
@@ -333,6 +334,7 @@ function handleClick(element){
 function handlePlay(){
 	noteTime = 0.0;
 	startTime = context.currentTime + 0.005;
+	playing = true;
 	goDrumsGo();
 }
 
@@ -341,7 +343,9 @@ function goDrumsGo(){
 
 	now -= startTime;
 
-	
+	 while (noteTime < now + 0.2) {
+	 	//console.log("noteTime is " + noteTime);
+	 	//console.log("now is " + now);
 		var playTime = noteTime + startTime;
 		
 		if(drumMachine.kickRhythm[rhythmCount]) { kick.trigger(playTime); }
@@ -350,7 +354,11 @@ function goDrumsGo(){
 
 		advance();
 
+		}
+		//console.log("out of while");
 		timeout = setTimeout("goDrumsGo()", 0);
+
+
 }
 
 function advance(){
