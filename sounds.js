@@ -3,13 +3,13 @@ var oscillator, gain;
 var keyAllowed = {};
 
 //Synth class
-var Synth = function (context){
+function Synth(context){
 	this.context = context;
 	this.numSaws = 5;
 	this.detune = 12;
 	this.voices = [];
 	this.output = this.context.createGain();
-}
+};
 
 Synth.prototype.noteOn = function(note, time){
 	if(this.voices[note] != null){
@@ -46,7 +46,7 @@ Synth.prototype.connect = function(target){
 }
 
 //Voice Class
-var Voice = function(context, frequency, numSaws, detune){
+function Voice(context, frequency, numSaws, detune){
 	this.context = context;
 	this.frequency = frequency;
 	this.numSaws = numSaws;
@@ -90,6 +90,86 @@ Voice.prototype.connect = function(target){
 	return this.output.connect(target);
 };
 
+//Kick Class
+
+function Kick(context){
+	this.context = context;
+};
+
+Kick.prototype.setup = function(){
+	this.osc = this.context.createOscillator();
+	this.oscEnvelope = this.context.createGain();
+	this.osc.connect(this.oscEnvelope);
+	this.oscEnvelope.connect(this.context.destination);
+};
+
+Kick.prototype.trigger = function(time){
+	this.setup();
+	this.osc.frequency.setValueAtTime(150, time);
+	this.oscEnvelope.gain.setValueAtTime(1, time);
+
+	this.osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.5);
+	this.oscEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+
+	this.osc.start(time);
+	this.osc.stop(time + 0.5);
+};
+
+//Snare Class
+function Snare(context){
+	this.context = context;
+};
+
+Snare.prototype.noiseBuffer = function(){
+	var bufferSize = this.context.sampleRate;
+	var buffer = this.context.createBuffer(1, bufferSize, this.context.sampleRate);
+
+	var output = buffer.getChannelData(0);
+	for(var i=0; i<bufferSize; i++){
+		output[i] = Math.random() * 2 - 1;
+	}
+
+	return buffer;
+
+};
+
+Snare.prototype.setup = function(){
+	this.noise = this.context.createBufferSource();
+	this.noise.buffer = this.noiseBuffer();
+	var noiseFilter = this.context.createBiquadFilter();
+	noiseFilter.type = 'highpass';
+	noiseFilter.frequency.value = 1000;
+	this.noise.connect(noiseFilter);
+
+	this.noiseEnvelope = this.context.createGain();
+	noiseFilter.connect(this.noiseEnvelope);
+	this.noiseEnvelope.connect(this.context.destination);
+
+	this.osc = this.context.createOscillator();
+	this.osc.type = 'triangle';
+	this.oscEnvelope = this.context.createGain();
+	this.osc.connect(this.oscEnvelope);
+	this.oscEnvelope.connect(this.context.destination);
+}
+
+Snare.prototype.trigger = function(time){
+	this.setup();
+
+	this.noiseEnvelope.gain.setValueAtTime(1, time);
+	this.noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time+0.2);
+	this.noise.start(time);
+
+	this.osc.frequency.setValueAtTime(100, time);
+	this.oscEnvelope.gain.setValueAtTime(0.7, time);
+	this.oscEnvelope.gain.exponentialRampToValueAtTime(0.01, time+0.1);
+	this.osc.start(time);
+
+	this.osc.stop(time+0.2);
+	this.noise.stop(time + 0.2);
+}
+
+
+
 function noteToFrequency(note){
 	return Math.pow(2, (note-69)/12) * 440.0;
 }
@@ -110,6 +190,16 @@ function off(){
 
 var synth = new Synth(context);
 synth.connect(context.destination);
+
+var kick = new Kick(context);
+// var now = context.currentTime;
+var snare = new Snare(context);
+
+// for(var i=0; i<5; i++){
+// 	kick.trigger(now + (0.5*i));
+// 	snare.trigger(now + i);
+// }
+
 
 document.onkeydown = function(e) {
 	// if (keyAllowed[e.keyCode] === false) return;
@@ -188,3 +278,101 @@ document.onkeyup = function(e) {
 
 	}
 }
+
+var drumMachine = {
+	"tempo": 100,
+	"kickRhythm": [0,0,0,0,0,0,0,0,0,0,0,0],
+	"snareRhythm": [0,0,0,0,0,0,0,0,0,0,0,0]
+};
+
+var drums = ["kick", "snare"];
+var startTime;
+var noteTime;
+var rhythmCount = 0;
+var loopLength = 12;
+var timeout;
+
+function handleClick(element){
+	var rhythm;
+
+	var id = element.getAttribute("id");
+	var strArr = id.split('_');
+	var drum = strArr[0];
+	var rhythmIndex = strArr[1];
+
+	var drumIndex = drums.indexOf(drum);
+
+	switch(drumIndex){
+		case 0:
+			rhythm = drumMachine.kickRhythm;
+			break;
+		case 1:
+			rhythm = drumMachine.snareRhythm;
+			break;
+	}
+
+	rhythm[rhythmIndex] = (rhythm[rhythmIndex] + 1) % 2;
+
+	if (element.getAttribute("class") == "off"){
+		element.setAttribute("class", "on");
+		now = context.currentTime;
+		switch(drum){
+			case "kick": 
+				kick.trigger(now);
+				break;
+			case "snare":
+				snare.trigger(now);
+		}
+
+	} else{
+		element.setAttribute("class", "off");
+	}
+	
+}
+
+function handlePlay(){
+	noteTime = 0.0;
+	startTime = context.currentTime + 0.005;
+	goDrumsGo();
+}
+
+function goDrumsGo(){
+	var now = context.currentTime;
+
+	now -= startTime;
+
+	
+		var playTime = noteTime + startTime;
+		
+		if(drumMachine.kickRhythm[rhythmCount]) { kick.trigger(playTime); }
+
+		if(drumMachine.snareRhythm[rhythmCount]) { snare.trigger(playTime); }
+
+		advance();
+
+		timeout = setTimeout("goDrumsGo()", 0);
+}
+
+function advance(){
+	var secondsPerBeat = 60/drumMachine.tempo;
+
+	rhythmCount++;
+	if(rhythmCount == loopLength){
+		rhythmCount = 0;
+	}
+
+	noteTime += 0.25*secondsPerBeat;
+}
+
+function handleStop(){
+	console.log("stop");
+	clearTimeout(timeout);
+	rhythmCount = 0;
+}
+// var c = document.getElementById("maincan");
+// var ctx = c.getContext("2d");
+// for (var i=0; i<10; i++){
+// 	ctx.beginPath();
+// 	ctx.arc(100 + (i*25),75,10,0,2*Math.PI);
+// 	ctx.stroke();
+// }
